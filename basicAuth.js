@@ -10,6 +10,11 @@ function basicAuth(req, res, next) {
   const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
   const [username, password] = credentials.split(':');
 
+  console.log('Basic Auth attempt with username:', username);
+  console.log('Basic Auth attempt with password:', password);
+  console.log('Expected username:', process.env.BASIC_AUTH_USER);
+  console.log('Expected password:', process.env.BASIC_AUTH_PASS);
+
   if (
     username === process.env.BASIC_AUTH_USER &&
     password === process.env.BASIC_AUTH_PASS
