@@ -1,14 +1,19 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const basicAuth = require('./basicAuth');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Require auth for static frontend files
+app.use(basicAuth);
 app.use(express.static(path.join(__dirname)));
 
 // Load credentials
@@ -23,12 +28,19 @@ app.get('/api/health', (req, res) => {
 app.post('/api/anthropic', async (req, res) => {
   console.log('Received Anthropic API request:', req.body);
   try {
-    const { prompt } = req.body;
-    
+    const { prompt, systemPromptUrl } = req.body;
+    const systemPromptResponse = await fetch(
+      systemPromptUrl ||
+        'https://gist.githubusercontent.com/marcosteixeira/592982708c9e462f5ee22e804fa9e6b9/raw/1e540492ed178150ac20bb6ed427f875edaa8683/system.md'
+    );
+    const system = await systemPromptResponse.text();
+
     if (!prompt) {
       console.log('No prompt provided');
       return res.status(400).json({ error: 'Prompt is required' });
     }
+
+    console.log('Using system prompt:', system);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -38,19 +50,22 @@ app.post('/api/anthropic', async (req, res) => {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        messages: [{
-          role: 'user',
-          content: prompt
-        }]
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 64000,
+        system: system,
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
       })
     });
 
     if (!response.ok) {
       const errorData = await response.text();
       console.error('Anthropic API error:', errorData);
-      return res.status(response.status).json({ 
+      return res.status(response.status).json({
         error: `Anthropic API error: ${response.status} ${response.statusText}`,
         details: errorData
       });
@@ -58,7 +73,6 @@ app.post('/api/anthropic', async (req, res) => {
 
     const data = await response.json();
     res.json(data);
-    
   } catch (error) {
     console.error('Proxy server error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
@@ -69,9 +83,11 @@ app.post('/api/anthropic', async (req, res) => {
 app.post('/api/beefree/auth', async (req, res) => {
   try {
     const { client_id, client_secret, uid } = req.body;
-    
+
     if (!client_id || !client_secret || !uid) {
-      return res.status(400).json({ error: 'client_id, client_secret, and uid are required' });
+      return res
+        .status(400)
+        .json({ error: 'client_id, client_secret, and uid are required' });
     }
 
     const response = await fetch('https://auth.getbee.io/loginV2', {
@@ -89,7 +105,7 @@ app.post('/api/beefree/auth', async (req, res) => {
     if (!response.ok) {
       const errorData = await response.text();
       console.error('Beefree auth error:', errorData);
-      return res.status(response.status).json({ 
+      return res.status(response.status).json({
         error: `Beefree auth error: ${response.status} ${response.statusText}`,
         details: errorData
       });
@@ -98,7 +114,6 @@ app.post('/api/beefree/auth', async (req, res) => {
     const data = await response.json();
     console.log('Beefree auth response:', data);
     res.json(data);
-    
   } catch (error) {
     console.error('Proxy server error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
@@ -109,24 +124,27 @@ app.post('/api/beefree/auth', async (req, res) => {
 app.post('/api/beefree/simple-to-full', async (req, res) => {
   try {
     const { template } = req.body;
-    
+
     if (!template) {
       return res.status(400).json({ error: 'Template is required' });
     }
 
-    const response = await fetch('https://api.getbee.io/v1/conversion/simple-to-full-json', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${credentials.beefree_api_key}`
-      },
-      body: JSON.stringify({ template })
-    });
+    const response = await fetch(
+      'https://api.getbee.io/v1/conversion/simple-to-full-json',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${credentials.beefree_api_key}`
+        },
+        body: JSON.stringify({ template })
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
       console.error('Beefree API error (simple-to-full):', errorData);
-      return res.status(response.status).json({ 
+      return res.status(response.status).json({
         error: `Beefree API error: ${response.status} ${response.statusText}`,
         details: errorData
       });
@@ -134,7 +152,6 @@ app.post('/api/beefree/simple-to-full', async (req, res) => {
 
     const data = await response.json();
     res.json(data);
-    
   } catch (error) {
     console.error('Proxy server error:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });

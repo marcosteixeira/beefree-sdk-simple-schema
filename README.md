@@ -1,93 +1,175 @@
-# Beefree SDK - Simple Schema
+# Beefree SDK Simple Schema Demo
 
-**Simple Schema** is a lightweight alternative to the full [Beefree SDK JSON](https://docs.beefree.io/beefree-sdk/data-structures/simple-schema) used to structure and validate designs in emails, pages, or popups. It was created to improve workflows powered by AI, headless design, and [Custom AddOns](https://docs.beefree.io/beefree-sdk/builder-addons/addons/custom-addons) development.
-
-Simple Schema is much smaller than Beefree's native JSON, which makes it more AI-friendly.
-
-You can convert the Simple Schema into native Beefree JSON using the [Content Services API endpoint](https://docs.beefree.io/beefree-sdk/apis/content-services-api/content-services-api-reference):  
-`POST /v1/conversion/simple-to-full-json`
+A minimalist demo showcasing the integration between Anthropic's Claude AI and Beefree's SDK for email template creation.
 
 ## Overview
 
-Simple Schema brings value to:
+This demo demonstrates a streamlined workflow for creating email templates:
 
-- **AI-driven design creation**
-- **Headless template workflows**
-- **Custom AddOns and Custom Rows development**
+1. **User Input**: Describe the email you want to create in natural language
+2. **AI Generation**: Anthropic's Claude generates a simple JSON template
+3. **Template Conversion**: Beefree API converts the simple JSON to full JSON format
+4. **Builder Integration**: Open the generated template in Beefree's visual editor
 
-It consolidates various schema types into a single structure, improves maintainability, and enables global updates.
+## Features
 
-## Use Cases
+- 🤖 **AI-Powered**: Uses Anthropic's Claude to generate email templates from natural language descriptions
+- 🎨 **Visual Editor**: Seamlessly opens generated templates in Beefree's drag-and-drop builder
+- 🔄 **Template Conversion**: Automatically converts simple JSON to full Beefree-compatible JSON
+- 💾 **Local Storage**: Templates are stored locally for easy access
 
-- AI-generated template creation
-- Headless template creation
-- A/B template variation generation
-- Enhanced development for Custom AddOns and Rows
+## Prerequisites
 
-## Schema Files
+- Node.js (v14 or higher)
+- npm
+- Anthropic API key
+- Beefree API key
 
-Each file in the following table defines a specific content block type available within Simple Schema. Below are brief descriptions and direct links to the JSON schema files in this repository:
+## Setup
 
-| Schema File | Description |
-|-------------|-------------|
-| [definitions.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/definitions.schema.json) | Contains shared definitions and reusable schema components used across all simple schema modules. |
-| [simple_button.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_button.schema.json) | Describes the structure for a customizable button. |
-| [simple_column.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_column.schema.json) | Defines the layout and content rules for a column. |
-| [simple_divider.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_divider.schema.json) | Describes available Divider content block properties. |
-| [simple_html.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_html.schema.json) | Enables the insertion of raw HTML blocks for advanced customization beyond standard modules. |
-| [simple_icons.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_icons.schema.json) | Describes available Icon content block properties. |
-| [simple_image.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_image.schema.json) | Describes the available Image content block properties. |
-| [simple_list.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_list.schema.json) | Describes an unordered or ordered list with multiple items and styling options. |
-| [simple_menu.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_menu.schema.json) | Describes available Menu content block properties. |
-| [simple_paragraph.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_paragraph.schema.json) | Describes available Paragraph content block properties. |
-| [simple_row.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_row.schema.json) | Manages layout rows, defining structure and grouping content. |
-| [simple_template.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_template.schema.json) | Top-level schema representing the entire design template, including layout, metadata, and content. |
-| [simple_title.schema.json](https://github.com/BeefreeSDK/beefree-sdk-simple-schema/blob/main/simple_title.schema.json) | Defines header or title elements with configurable properties. |
+1. **Clone or download this repository**
 
+2. **Install dependencies**:
 
-## API Endpoint
+   ```bash
+   npm install
+   ```
 
-To convert a Simple Schema into full Beefree SDK JSON, you can use the following endpoint in the [Content Services API](https://docs.beefree.io/beefree-sdk/apis/content-services-api/content-services-api-reference) offering:
+3. **Configure API keys**:
+   Create a `credentials.js` file in the project root with your API keys:
 
-```http
-POST /v1/conversion/simple-to-full-json
+   ```javascript
+   const credentials = {
+     client_id: 'your_beefree_client_id',
+     client_secret: 'your_beefree_client_secret',
+     beefree_api_key: 'your_beefree_api_key',
+     anthropic_api_key: 'your_anthropic_api_key'
+   };
+
+   module.exports = credentials;
+   ```
+
+4. **Start the demo**:
+
+   ```bash
+   ./start.sh
+   ```
+
+   Or manually:
+
+   ```bash
+   node proxy-server.js
+   ```
+
+5. **Open your browser** and navigate to `http://localhost:3000`
+
+## How to Use
+
+1. **Describe Your Email**: In the chat interface, describe the email you want to create (e.g., "Create a welcome email for a new customer with a discount offer")
+
+2. **AI Generation**: The AI will generate a simple JSON template based on your description
+
+3. **Template Conversion**: The system automatically converts the simple JSON to full Beefree-compatible JSON
+
+4. **Open in Builder**: Click "Edit your design in the builder" to open the template in Beefree's visual editor
+
+5. **Customize**: Use Beefree's drag-and-drop interface to customize your email design
+
+## API Endpoints
+
+The proxy server provides the following endpoints:
+
+- `POST /api/anthropic` - Calls Anthropic's Claude API
+- `POST /api/beefree/simple-to-full` - Converts simple JSON to full JSON using Beefree API
+- `GET /api/health` - Health check endpoint
+
+## File Structure
+
+```
+simple-schema-concept/
+├── index.html          # Main demo interface
+├── builder.html        # Beefree SDK integration
+├── proxy-server.js     # API proxy server
+├── credentials.js      # API keys configuration
+├── package.json        # Dependencies
+├── start.sh           # Startup script
+└── README.md          # This file
 ```
 
-## Developer Notes
+## Technical Details
 
-- All AddOns use the Simple Schema format.
-- Locked properties only apply to Row AddOns.
-- Default values are auto-applied where omitted.
-- Use `contentDialog.addon.handler` to apply block-level styles globally.
+### Simple JSON Schema
 
-Example handler format:
+The AI generates templates using the Beefree SDK simple template schema:
+
 ```json
 {
-  "contentDialogId": "addOnID",
-  "value": {
-    "blockStyle": {
-      // Padding, hover styles, and other block-level styling
+  "template": {
+    "type": "email",
+    "rows": [
+      {
+        "name": "Row Name",
+        "columns": [
+          {
+            "weight": 12,
+            "modules": [
+              {
+                "type": "title",
+                "content": "Your title here"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "settings": {
+      "linkColor": "#0066CC",
+      "background-color": "#ffffff",
+      "contentAreaBackgroundColor": "#ffffff",
+      "width": 600
+    },
+    "metadata": {
+      "title": "Email Template",
+      "description": "Generated email template",
+      "subject": "Your Email Subject",
+      "preheader": "Email preheader text"
     }
   }
 }
 ```
 
-## Schema Validation Tips
+### Supported Module Types
 
-The following code snippet shows an example schema validation.
+- `title` - Email titles and headings
+- `paragraph` - Text content
+- `button` - Call-to-action buttons
+- `image` - Images and graphics
+- `divider` - Visual separators
+- `html` - Custom HTML content
+- `list` - Bulleted or numbered lists
+- `menu` - Navigation menus
+- `icons` - Social media icons
 
-```ts
-const urlOrMergeTags = (text: string): boolean => {
-  try {
-    new URL(text)
-    return true
-  } catch {
-    return /{{.*}}/.test(text)
-  }
-}
+## Troubleshooting
 
-const noAnchorTags = (text: string): boolean =>
-  !/<a[^>]*>[\s\S]*?<\/a>|<a\s*\/>/i.test(text)
-```
+### Common Issues
 
-Reference the official [Beefree SDK](https://docs.beefree.io/beefree-sdk/data-structures/simple-schema) technical documentation to learn more about how to use Simple Schema.
+1. **API Key Errors**: Ensure your API keys are correctly configured in `credentials.js`
+2. **Port Already in Use**: Change the port in `proxy-server.js` if port 3000 is occupied
+3. **CORS Issues**: The proxy server handles CORS for local development
+
+### Getting API Keys
+
+- **Anthropic API Key**: Get from [Anthropic Console](https://console.anthropic.com/)
+- **Beefree API Key**: Get from [Beefree Dashboard](https://app.getbee.io/)
+
+## License
+
+This demo is provided as-is for educational purposes.
+
+## Support
+
+For issues related to:
+
+- **Beefree SDK**: Check the [Beefree Documentation](https://docs.beefree.io/)
+- **Anthropic API**: Check the [Anthropic Documentation](https://docs.anthropic.com/)

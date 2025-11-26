@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Beefree SDK - Email Builder</title>
+    <title>Beefree SDK - PopUp Builder</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type="text/css">
@@ -65,7 +65,7 @@
         if (emailData) {
           selectedTemplate = JSON.parse(emailData);
           console.log('Loaded email data from storage:', selectedTemplate);
-          
+
           // Clear the stored data after loading
           localStorage.removeItem('fullEmailJson');
         }
@@ -78,48 +78,43 @@
         container: 'bee-plugin-container',
         uid: 'demo-user-' + Date.now(),
         language: 'en-US',
-        specialLinks: [
-          {
-            type: "unsubscribe",
-            label: "Unsubscribe",
-            link: "http://[unsubscribe]/",
-          },
-          {
-            type: "subscribe",
-            label: "Subscribe",
-            link: "http://[subscribe]/",
-          },
-        ],
-        mergeTags: [
-          {
-            name: "First Name",
-            value: "[first_name]",
-          },
-          {
-            name: "Last Name",
-            value: "[last_name]",
-          },
-          {
-            name: "Email",
-            value: "[email]",
-          },
-        ],
+        workspace: {
+          popup: {
+            // choose a layout – e.g., centre modal, bottom bar, etc.
+            layout: 'classic-center', // or 'bar-bottom', 'drawer-left' etc.
+            theme: 'custom', // use a custom theme or one of the presets
+            contentWidth: 600, // desktop width
+            contentWidthMobile: 300, // mobile width
+            backgroundImage: null, // optionally preview how it will look in context
+            customStyles: {
+              container: {
+                borderRadius: '8px',
+                boxShadow: '0 5px 15px rgba(0,0,0,0.5)'
+              },
+              overlay: {
+                backgroundColor: 'rgba(0,0,0,0.5)'
+              }
+            }
+          }
+        },
         onSave: function (jsonFile, htmlFile) {
-          console.log("Template saved:", jsonFile);
+          console.log('Template saved:', jsonFile);
           // You can implement custom save logic here
         },
         onAutoSave: function (jsonFile) {
-          console.log("Auto-saving template...");
-          localStorage.setItem("email.autosave", jsonFile);
+          console.log('Auto-saving template...');
+          localStorage.setItem('email.autosave', jsonFile);
         },
         onSend: function (htmlFile) {
-          console.log("Email ready to send:", htmlFile);
+          console.log('Email ready to send:', htmlFile);
           // You can implement custom send logic here
         },
         onError: function (errorMessage) {
-          console.error("Beefree SDK error:", errorMessage);
-          document.getElementById('bee-plugin-container').innerHTML = 
-            '<div class="error">Error loading Beefree SDK: ' + errorMessage.message + '</div>';
+          console.error('Beefree SDK error:', errorMessage);
+          document.getElementById('bee-plugin-container').innerHTML =
+            '<div class="error">Error loading Beefree SDK: ' +
+            errorMessage.message +
+            '</div>';
         }
       };
 
@@ -136,18 +131,18 @@
             uid: beeConfig.uid
           })
         })
-        .then(response => {
-          if (!response.ok) throw new Error('Auth failed: ' + response.status);
-          return response.json();
-        })
-        .then(data => {
-          callback(data);
-        })
-        .catch(error => {
-          console.error('Error getting Beefree token:', error);
-          document.getElementById('bee-plugin-container').innerHTML = 
-            '<div class="error">Failed to authenticate with Beefree. Please check your credentials and try again.</div>';
-        });
+          .then((response) => {
+            if (!response.ok) throw new Error('Auth failed: ' + response.status);
+            return response.json();
+          })
+          .then((data) => {
+            callback(data);
+          })
+          .catch((error) => {
+            console.error('Error getting Beefree token:', error);
+            document.getElementById('bee-plugin-container').innerHTML =
+              '<div class="error">Failed to authenticate with Beefree. Please check your credentials and try again.</div>';
+          });
       }
 
       // Initialize Beefree SDK (do not use .create or BeePlugin)
@@ -177,10 +172,12 @@
       }
 
       async function getTemplate() {
-        const autosave = localStorage.getItem("email.autosave");
+        const autosave = localStorage.getItem('email.autosave');
         if (selectedTemplate) return selectedTemplate;
         if (autosave) {
-          try { return JSON.parse(autosave); } catch {}
+          try {
+            return JSON.parse(autosave);
+          } catch {}
         }
         return undefined;
       }
@@ -190,13 +187,13 @@
           const json = await getTemplate();
           const token = await getToken();
           BeefreeSDKInstance = new BeefreeSDK(token);
-          BeefreeSDKInstance
-            .start(beeConfig, json, "", { shared: false })
-            .then((instance) => {
+          BeefreeSDKInstance.start(beeConfig, json, '', { shared: false }).then(
+            (instance) => {
               // Do things here after the editor is initialized
-            });
+            }
+          );
         } catch (error) {
-          console.error("error during initialization --> ", error);
+          console.error('error during initialization --> ', error);
         }
       }
 

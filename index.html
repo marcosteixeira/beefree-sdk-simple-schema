@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>AI Email Creation Assistant</title>
+    <title>AI Popup Creation Assistant</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
@@ -11,27 +11,27 @@
     <style>
       /* General Styles */
       :root {
-        --primary: #7747FF;
+        --primary: #7747ff;
         --primary-rgb: 119, 71, 255;
-        --accent: #82EDA8;
+        --accent: #82eda8;
         --accent-rgb: 130, 237, 168;
-        --background: #FBF9FF;
-        --dark-bg: #26045D;
-        --light-shapes: #F1F0EE;
-        --body-text: #272D3D;
+        --background: #fbf9ff;
+        --dark-bg: #26045d;
+        --light-shapes: #f1f0ee;
+        --body-text: #272d3d;
         --alt-text: #140231;
-        --chat-bg: #FFFFFF;
-        --chat-border: #E5E7EB;
-        --user-message-bg: #7747FF;
-        --assistant-message-bg: #F3F4F6;
-        --user-message-text: #FFFFFF;
+        --chat-bg: #ffffff;
+        --chat-border: #e5e7eb;
+        --user-message-bg: #7747ff;
+        --assistant-message-bg: #f3f4f6;
+        --user-message-text: #ffffff;
         --assistant-message-text: #374151;
       }
-      
+
       * {
         box-sizing: border-box;
       }
-      
+
       body {
         font-family: 'Inter', sans-serif;
         margin: 0;
@@ -131,12 +131,24 @@
         animation: typing 1.4s infinite ease-in-out;
       }
 
-      .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-      .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+      .typing-dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+      .typing-dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
 
       @keyframes typing {
-        0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-        40% { transform: scale(1); opacity: 1; }
+        0%,
+        80%,
+        100% {
+          transform: scale(0.8);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
       }
 
       .chat-input {
@@ -294,35 +306,6 @@
       .hidden {
         display: none;
       }
-
-      .email-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-top: 20px;
-      }
-
-      .email-button {
-        background-color: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 20px;
-        font-size: 0.95rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        text-align: left;
-      }
-
-      .email-button:hover {
-        background-color: #6a3fe6;
-      }
-
-      .email-button:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-      }
     </style>
   </head>
 
@@ -331,20 +314,20 @@
       <!-- Chat Section -->
       <div class="chat-section">
         <div class="chat-header">
-          <h1>AI Email Assistant</h1>
-          <p>Describe your email sequence and I'll create three emails for you</p>
+          <h1>AI PopUp Assistant</h1>
+          <p>Describe your popup and I'll create it for you</p>
         </div>
-        
+
         <div class="chat-messages" id="chatMessages">
           <!-- Messages will be added here -->
         </div>
-        
+
         <div class="chat-input">
           <div class="input-container">
-            <textarea 
-              class="input-field" 
-              id="userInput" 
-              placeholder="Describe the email sequence you want to create..."
+            <textarea
+              class="input-field"
+              id="userInput"
+              placeholder="Describe the popup you want to create..."
               rows="1"
             ></textarea>
             <button class="send-button" id="sendButton" onclick="sendMessage()">
@@ -352,23 +335,29 @@
             </button>
           </div>
         </div>
+
+        <div class="chat-input">
+          <label for="systemPromptUrl">System Prompt URL (optional):</label>
+          <input type="text" id="systemPromptUrl" />
+        </div>
       </div>
 
       <!-- Builder Section -->
       <div class="builder-section">
         <div class="welcome-state" id="welcomeState">
-          <h3>Welcome to Your Email Sequence Builder!</h3>
+          <h3>Welcome to Your Popup Builder!</h3>
           <p>
-            Start a conversation with our AI assistant on the left to create your perfect email sequence. 
-            The assistant will generate three emails: Welcome, Onboarding, and Upgrade.
+            Start a conversation with our AI assistant on the left to create your perfect
+            popup. The assistant will guide you through the process and generate your
+            popup design.
           </p>
           <div class="action-buttons">
             <button class="btn btn-accent" onclick="startNewEmail()">
-              🚀 Start New Sequence
+              🚀 Start New Popup
             </button>
           </div>
         </div>
-        
+
         <div id="emailResult" class="hidden">
           <!-- Email result will be displayed here -->
         </div>
@@ -381,21 +370,12 @@
       const sendButton = document.getElementById('sendButton');
       const welcomeState = document.getElementById('welcomeState');
       const emailResult = document.getElementById('emailResult');
+      const systemPromptUrl = document.getElementById('systemPromptUrl');
 
       let isProcessing = false;
-      let currentEmailIndex = 0;
-      let userDescription = '';
-      let emailTypes = [
-        { name: 'Welcome', key: 'welcomeEmailJson', context: 'create an outstanding welcome email following email marketing best practices' },
-        { name: 'Onboarding', key: 'onboardingEmailJson', context: 'Create an amazing onboarding email following email marketing and instructional best practices' },
-        { name: 'Upgrade', key: 'upgradeEmailJson', context: 'Create an upgrade your subscription for more perks email following email marketing best practices and outlining the top three perks for upgrading. Include a CTA to example.com' }
-      ];
 
       // Initialize the chat
-      checkExistingEmails();
-      if (!localStorage.getItem('welcomeEmailJson') && !localStorage.getItem('onboardingEmailJson') && !localStorage.getItem('upgradeEmailJson')) {
-        startNewEmail();
-      }
+      startNewEmail();
 
       // Handle Enter key in textarea
       userInput.addEventListener('keydown', (e) => {
@@ -413,100 +393,25 @@
 
       function sendMessage() {
         if (isProcessing) return;
-        
+
         const message = userInput.value.trim();
         if (!message) return;
 
         addMessage('user', message);
         userInput.value = '';
         userInput.style.height = 'auto';
-        
-        processEmailSequence(message);
+
+        const systemPromptUrlValue = systemPromptUrl.value.trim();
+
+        processEmailRequest(message, systemPromptUrlValue);
       }
 
-      async function processEmailSequence(userDescription) {
+      async function processEmailRequest(userDescription, systemPromptUrlValue) {
         isProcessing = true;
         sendButton.disabled = true;
-        currentEmailIndex = 0;
-        
-        addMessage('assistant', 'I\'ll create a complete email sequence for you! Let me start with the welcome email...');
-        
-        await createEmail(0, userDescription);
-      }
-
-      async function createEmail(index, description) {
-        if (index >= emailTypes.length) {
-          // All emails are done
-          hideTypingIndicator();
-          addMessage('assistant', '🎉 Your complete email sequence has been created!');
-          displayAllEmailButtons();
-          isProcessing = false;
-          sendButton.disabled = false;
-          return;
-        }
-
-        const emailType = emailTypes[index];
         showTypingIndicator();
-        
-        if (index > 0) {
-          addMessage('assistant', `${emailType.name} email being created...`);
-        }
 
         try {
-          // Create the prompt for Anthropic
-          const prompt = `Use this email marketer's description of their dream email to design a stunning email that meets all of the requirements they outlined in their description. Here is the description: "${description}". ${emailType.context}. The email you deliver should meet industry best practices in email marketing and adhere to trending design tips from the best email designers in the industry. The final output should be in Beefree SDK's simple template schema format. 
-
-IMPORTANT: Return ONLY a valid JSON object that follows this exact schema structure:
-
-{
-  "template": {
-    "type": "email",
-    "rows": [
-      {
-        "name": "Row Name",
-        "columns": [
-          {
-            "weight": 12,
-            "modules": [
-              {
-                "type": "title",
-                "text": "Your title here"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "settings": {
-      "linkColor": "#0066CC",
-      "background-color": "#ffffff",
-      "contentAreaBackgroundColor": "#ffffff",
-      "width": 600
-    },
-    "metadata": {
-      "title": "Email Template",
-      "description": "Generated email template",
-      "subject": "Your Email Subject",
-      "preheader": "Email preheader text"
-    }
-  }
-}
-
-Available module types: title, paragraph, button, image, divider, html, list, menu, icons
-
-For each module type, include appropriate content. For example:
-- title: {"type": "title", "text": "Your title text"}
-- paragraph: {"type": "paragraph", "text": "Your paragraph text"}
-- button: {"type": "button", "text": "Button text", "href": "https://example.com"}
-- image: {"type": "image", "src": "https://example.com/image.jpg", "alt": "Image description"}
-- divider: {"type": "divider"}
-- html: {"type": "html", "html": "<p>Your HTML content</p>"}
-- list: {"type": "list", "text": "List item text"}
-- menu: {"type": "menu", "items": [{"text": "Link 1", "href": "https://example.com"}]}
-- icons: {"type": "icons", "items": [{"type": "facebook", "href": "https://facebook.com"}]}
-
-Do NOT invent any properties or structures that do not exist in this simple unified schema, strictly use only what is available here. The final email should be delivered in the response as a simple schema template. Make sure the JSON is valid and complete.`;
-
           // Call Anthropic API
           const response = await fetch('/api/anthropic', {
             method: 'POST',
@@ -514,23 +419,26 @@ Do NOT invent any properties or structures that do not exist in this simple unif
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              prompt: prompt
+              prompt: userDescription,
+              systemPromptUrl: systemPromptUrlValue
             })
           });
 
           if (!response.ok) {
             const errorData = await response.text();
             console.error('Anthropic API error:', errorData);
-            throw new Error(`Failed to generate ${emailType.name} email: ${response.status} ${response.statusText}`);
+            throw new Error(
+              `Failed to generate email: ${response.status} ${response.statusText}`
+            );
           }
 
           const data = await response.json();
-          console.log(`Anthropic API response for ${emailType.name}:`, data);
-          
+          console.log('Anthropic API response:', data);
+
           // Extract the text content from the response
           let emailJsonText = '';
           if (data.content && data.content.length > 0) {
-            const textBlock = data.content.find(block => block.type === 'text');
+            const textBlock = data.content.find((block) => block.type === 'text');
             if (textBlock) {
               emailJsonText = textBlock.text;
             } else {
@@ -544,27 +452,30 @@ Do NOT invent any properties or structures that do not exist in this simple unif
           let emailJson;
           try {
             // First try to find JSON in code blocks
-            const jsonMatch = emailJsonText.match(/```json\s*([\s\S]*?)\s*```/) || 
-                             emailJsonText.match(/```\s*([\s\S]*?)\s*```/);
-            
+            const jsonMatch =
+              emailJsonText.match(/```json\s*([\s\S]*?)\s*```/) ||
+              emailJsonText.match(/```\s*([\s\S]*?)\s*```/);
+
             if (jsonMatch) {
               emailJson = JSON.parse(jsonMatch[1]);
             } else {
               // If no code blocks, try to find JSON object in the text
-              const jsonObjectMatch = emailJsonText.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
+              const jsonObjectMatch = emailJsonText.match(
+                /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/
+              );
               if (jsonObjectMatch) {
                 emailJson = JSON.parse(jsonObjectMatch[0]);
               } else {
                 throw new Error('No JSON found in response');
               }
             }
-            
+
             // Validate that we have the required template structure
             if (!emailJson.template || !emailJson.template.rows) {
               throw new Error('Invalid template structure - missing template or rows');
             }
-            
-            console.log(`Parsed ${emailType.name} email JSON:`, emailJson);
+
+            console.log('Parsed email JSON:', emailJson);
           } catch (parseError) {
             console.error('JSON parsing error:', parseError);
             console.error('Raw response text:', emailJsonText);
@@ -585,7 +496,7 @@ Do NOT invent any properties or structures that do not exist in this simple unif
           if (!beefreeResponse.ok) {
             const errorData = await beefreeResponse.text();
             console.error('Beefree API error:', errorData);
-            
+
             // Parse the error details for feedback
             let errorDetails = '';
             try {
@@ -594,70 +505,26 @@ Do NOT invent any properties or structures that do not exist in this simple unif
             } catch (e) {
               errorDetails = errorData;
             }
-            
+
             // Send error feedback to Anthropic for correction
-            addMessage('assistant', `I need to fix some formatting issues for the ${emailType.name} email. Let me correct the template...`);
-            
+            addMessage(
+              'assistant',
+              'I need to fix some formatting issues. Let me correct the template...'
+            );
+
             const correctionPrompt = `The previous template I generated had validation errors from the Beefree API. Here are the specific errors that need to be fixed:
 
 ${errorDetails}
 
-The original user request was: "${description}"
+The original user request was: "${userDescription}"
 
 Please generate a corrected template that follows the exact Beefree SDK simple schema format. Here are the key corrections needed:
 
 1. For image modules: use "src" instead of "url", "alt" is allowed
-2. For title modules: use "text" instead of "content" 
+2. For title modules: use "text" instead of "content"
 3. For paragraph modules: use "text" instead of "content"
 4. For button modules: use "text" instead of "content", "href" instead of "url"
 5. Only include properties that are explicitly defined in the schema
-
-IMPORTANT: Return ONLY a valid JSON object that follows this exact schema structure:
-
-{
-  "template": {
-    "type": "email",
-    "rows": [
-      {
-        "name": "Row Name",
-        "columns": [
-          {
-            "weight": 12,
-            "modules": [
-              {
-                "type": "title",
-                "text": "Your title here"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "settings": {
-      "linkColor": "#0066CC",
-      "background-color": "#ffffff",
-      "contentAreaBackgroundColor": "#ffffff",
-      "width": 600
-    },
-    "metadata": {
-      "title": "Email Template",
-      "description": "Generated email template",
-      "subject": "Your Email Subject",
-      "preheader": "Email preheader text"
-    }
-  }
-}
-
-Available module types and their correct properties:
-- title: {"type": "title", "text": "Your title text"}
-- paragraph: {"type": "paragraph", "text": "Your paragraph text"}
-- button: {"type": "button", "text": "Button text", "href": "https://example.com"}
-- image: {"type": "image", "src": "https://example.com/image.jpg", "alt": "Image description"}
-- divider: {"type": "divider"}
-- html: {"type": "html", "html": "<p>Your HTML content</p>"}
-- list: {"type": "list", "text": "List item text"}
-- menu: {"type": "menu", "items": [{"text": "Link 1", "href": "https://example.com"}]}
-- icons: {"type": "icons", "items": [{"type": "facebook", "href": "https://facebook.com"}]}
 
 Make sure the JSON is valid and follows the exact schema structure.`;
 
@@ -668,23 +535,28 @@ Make sure the JSON is valid and follows the exact schema structure.`;
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                prompt: correctionPrompt
+                prompt: correctionPrompt,
+                systemPromptUrl: systemPromptUrlValue
               })
             });
 
             if (!correctionResponse.ok) {
               const correctionErrorData = await correctionResponse.text();
               console.error('Anthropic correction API error:', correctionErrorData);
-              throw new Error(`Failed to correct ${emailType.name} template: ${correctionResponse.status} ${correctionResponse.statusText}`);
+              throw new Error(
+                `Failed to correct template: ${correctionResponse.status} ${correctionResponse.statusText}`
+              );
             }
 
             const correctionData = await correctionResponse.json();
-            console.log(`Anthropic correction response for ${emailType.name}:`, correctionData);
-            
+            console.log('Anthropic correction response:', correctionData);
+
             // Extract and parse the corrected JSON
             let correctedEmailJsonText = '';
             if (correctionData.content && correctionData.content.length > 0) {
-              const textBlock = correctionData.content.find(block => block.type === 'text');
+              const textBlock = correctionData.content.find(
+                (block) => block.type === 'text'
+              );
               if (textBlock) {
                 correctedEmailJsonText = textBlock.text;
               } else {
@@ -697,127 +569,116 @@ Make sure the JSON is valid and follows the exact schema structure.`;
             // Parse the corrected JSON
             let correctedEmailJson;
             try {
-              const jsonMatch = correctedEmailJsonText.match(/```json\s*([\s\S]*?)\s*```/) || 
-                               correctedEmailJsonText.match(/```\s*([\s\S]*?)\s*```/);
-              
+              const jsonMatch =
+                correctedEmailJsonText.match(/```json\s*([\s\S]*?)\s*```/) ||
+                correctedEmailJsonText.match(/```\s*([\s\S]*?)\s*```/);
+
               if (jsonMatch) {
                 correctedEmailJson = JSON.parse(jsonMatch[1]);
               } else {
-                const jsonObjectMatch = correctedEmailJsonText.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
+                const jsonObjectMatch = correctedEmailJsonText.match(
+                  /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/
+                );
                 if (jsonObjectMatch) {
                   correctedEmailJson = JSON.parse(jsonObjectMatch[0]);
                 } else {
                   throw new Error('No JSON found in correction response');
                 }
               }
-              
+
               if (!correctedEmailJson.template || !correctedEmailJson.template.rows) {
-                throw new Error('Invalid corrected template structure - missing template or rows');
+                throw new Error(
+                  'Invalid corrected template structure - missing template or rows'
+                );
               }
-              
-              console.log(`Corrected ${emailType.name} email JSON:`, correctedEmailJson);
-              
+
+              console.log('Corrected email JSON:', correctedEmailJson);
+
               // Try the Beefree API again with corrected template
-              const correctedBeefreeResponse = await fetch('/api/beefree/simple-to-full', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  template: correctedEmailJson.template
-                })
-              });
+              const correctedBeefreeResponse = await fetch(
+                '/api/beefree/simple-to-full',
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    template: correctedEmailJson.template
+                  })
+                }
+              );
 
               if (!correctedBeefreeResponse.ok) {
                 const correctedErrorData = await correctedBeefreeResponse.text();
                 console.error('Beefree API error after correction:', correctedErrorData);
-                throw new Error(`Failed to convert corrected ${emailType.name} template: ${correctedBeefreeResponse.status} ${correctedBeefreeResponse.statusText}`);
+                throw new Error(
+                  `Failed to convert corrected template: ${correctedBeefreeResponse.status} ${correctedBeefreeResponse.statusText}`
+                );
               }
 
               const fullJson = await correctedBeefreeResponse.json();
-              console.log(`Full JSON from Beefree for ${emailType.name} after correction:`, fullJson);
+              console.log('Full JSON from Beefree after correction:', fullJson);
 
               // Store the full JSON locally
-              localStorage.setItem(emailType.key, JSON.stringify(fullJson));
-              
+              localStorage.setItem('fullEmailJson', JSON.stringify(fullJson));
+
+              // Display success message and show builder button
+              hideTypingIndicator();
+              addMessage('assistant', '🎉 Your popup has been created successfully!');
+
+              // Show the builder button
+              displayBuilderButton();
             } catch (parseError) {
               console.error('JSON parsing error in correction:', parseError);
               console.error('Raw correction response text:', correctedEmailJsonText);
-              throw new Error(`Invalid JSON format in correction response: ${parseError.message}`);
+              throw new Error(
+                `Invalid JSON format in correction response: ${parseError.message}`
+              );
             }
-            
           } else {
             const fullJson = await beefreeResponse.json();
-            console.log(`Full JSON from Beefree for ${emailType.name}:`, fullJson);
+            console.log('Full JSON from Beefree:', fullJson);
 
             // Store the full JSON locally
-            localStorage.setItem(emailType.key, JSON.stringify(fullJson));
-          }
+            localStorage.setItem('fullEmailJson', JSON.stringify(fullJson));
 
-          // Show button for this email if it's the first one
-          if (index === 0) {
+            // Display success message and show builder button
             hideTypingIndicator();
-            addMessage('assistant', `✅ ${emailType.name} email created successfully!`);
-            displayEmailButton(emailType.name, emailType.key);
-          }
+            addMessage('assistant', '🎉 Your popup has been created successfully!');
 
-          // Move to next email
-          currentEmailIndex = index + 1;
-          await createEmail(currentEmailIndex, description);
-          
+            // Show the builder button
+            displayBuilderButton();
+          }
         } catch (error) {
-          console.error(`Error processing ${emailType.name} email:`, error);
+          console.error('Error processing email:', error);
           hideTypingIndicator();
-          addMessage('assistant', `Sorry, there was an error creating the ${emailType.name} email: ${error.message}`);
+          addMessage(
+            'assistant',
+            `Sorry, there was an error creating your email: ${error.message}`
+          );
+        } finally {
           isProcessing = false;
           sendButton.disabled = false;
         }
       }
 
-      function displayEmailButton(emailName, storageKey) {
+      function displayBuilderButton() {
         welcomeState.classList.add('hidden');
         emailResult.classList.remove('hidden');
-        
+
         emailResult.innerHTML = `
           <div class="email-preview">
-            <h4>${emailName} Email Ready!</h4>
+            <h4>Your PopUp is Ready!</h4>
             <div class="email-preview-content">
-              <p>Your ${emailName.toLowerCase()} email has been generated and is ready for customization.</p>
+              <p>Your email template has been generated and is ready for customization.</p>
             </div>
           </div>
           <div class="action-buttons">
-            <button class="btn btn-primary" onclick="openInBuilder('${storageKey}', '${emailName}')">
-              🎨 Edit ${emailName} Email
+            <button class="btn btn-primary" onclick="openInBuilder()">
+              🎨 Edit your design in the builder
             </button>
-          </div>
-        `;
-      }
-
-      function displayAllEmailButtons() {
-        welcomeState.classList.add('hidden');
-        emailResult.classList.remove('hidden');
-        
-        emailResult.innerHTML = `
-          <div class="email-preview">
-            <h4>Your Complete Email Sequence is Ready!</h4>
-            <div class="email-preview-content">
-              <p>All three emails have been generated and are ready for customization.</p>
-            </div>
-          </div>
-          <div class="email-buttons">
-            <button class="email-button" onclick="openInBuilder('welcomeEmailJson', 'Welcome')">
-              🎨 Edit Welcome Email
-            </button>
-            <button class="email-button" onclick="openInBuilder('onboardingEmailJson', 'Onboarding')">
-              🎨 Edit Onboarding Email
-            </button>
-            <button class="email-button" onclick="openInBuilder('upgradeEmailJson', 'Upgrade')">
-              🎨 Edit Upgrade Email
-            </button>
-          </div>
-          <div class="action-buttons" style="margin-top: 20px;">
             <button class="btn btn-secondary" onclick="startNewEmail()">
-              ➕ Create Another Sequence
+              ➕ Create Another Popup
             </button>
           </div>
         `;
@@ -857,90 +718,34 @@ Make sure the JSON is valid and follows the exact schema structure.`;
       function startNewEmail() {
         isProcessing = false;
         sendButton.disabled = false;
-        currentEmailIndex = 0;
-        
-        // Clear existing emails from localStorage
-        localStorage.removeItem('welcomeEmailJson');
-        localStorage.removeItem('onboardingEmailJson');
-        localStorage.removeItem('upgradeEmailJson');
-        
+
         chatMessages.innerHTML = '';
         welcomeState.classList.remove('hidden');
         emailResult.classList.add('hidden');
 
         setTimeout(() => {
-          addMessage('assistant', 'Welcome to your AI-powered Email Sequence Builder! 👋');
+          addMessage(
+            'assistant',
+            'Welcome to your AI-powered PopUp Creation Assistant! 👋'
+          );
           setTimeout(() => {
-            addMessage('assistant', 'Describe the email sequence you want to create, and I\'ll generate three emails: Welcome, Onboarding, and Upgrade.');
+            addMessage(
+              'assistant',
+              "Describe the popup you want to create, and I'll generate it for you."
+            );
           }, 1000);
         }, 500);
       }
 
-      function openInBuilder(storageKey, emailName) {
-        const emailJson = localStorage.getItem(storageKey);
-        if (emailJson) {
+      function openInBuilder() {
+        const fullJson = localStorage.getItem('fullEmailJson');
+        if (fullJson) {
           // Store the email data in localStorage for the builder
-          localStorage.setItem('currentEmailData', emailJson);
-          localStorage.setItem('currentEmailName', emailName);
+          localStorage.setItem('emailData', encodeURIComponent(fullJson));
           window.location.href = 'builder.html';
         } else {
-          alert(`No ${emailName} email data found. Please create an email sequence first.`);
+          alert('No email data found. Please create an email first.');
         }
-      }
-
-      // Check if we have existing emails when page loads
-      function checkExistingEmails() {
-        const welcomeEmail = localStorage.getItem('welcomeEmailJson');
-        const onboardingEmail = localStorage.getItem('onboardingEmailJson');
-        const upgradeEmail = localStorage.getItem('upgradeEmailJson');
-        
-        if (welcomeEmail || onboardingEmail || upgradeEmail) {
-          // We have existing emails, show them
-          displayExistingEmails();
-          
-          // Add a welcome back message
-          setTimeout(() => {
-            addMessage('assistant', 'Welcome back! Your email sequence is ready for editing. Click any button to open that email in the builder.');
-          }, 500);
-        }
-      }
-
-      function displayExistingEmails() {
-        welcomeState.classList.add('hidden');
-        emailResult.classList.remove('hidden');
-        
-        const welcomeEmail = localStorage.getItem('welcomeEmailJson');
-        const onboardingEmail = localStorage.getItem('onboardingEmailJson');
-        const upgradeEmail = localStorage.getItem('upgradeEmailJson');
-        
-        let emailButtons = '';
-        
-        if (welcomeEmail) {
-          emailButtons += `<button class="email-button" onclick="openInBuilder('welcomeEmailJson', 'Welcome')">🎨 Edit Welcome Email</button>`;
-        }
-        if (onboardingEmail) {
-          emailButtons += `<button class="email-button" onclick="openInBuilder('onboardingEmailJson', 'Onboarding')">🎨 Edit Onboarding Email</button>`;
-        }
-        if (upgradeEmail) {
-          emailButtons += `<button class="email-button" onclick="openInBuilder('upgradeEmailJson', 'Upgrade')">🎨 Edit Upgrade Email</button>`;
-        }
-        
-        emailResult.innerHTML = `
-          <div class="email-preview">
-            <h4>Your Email Sequence</h4>
-            <div class="email-preview-content">
-              <p>You have existing emails ready for editing. Click any button below to open that email in the builder.</p>
-            </div>
-          </div>
-          <div class="email-buttons">
-            ${emailButtons}
-          </div>
-          <div class="action-buttons" style="margin-top: 20px;">
-            <button class="btn btn-secondary" onclick="startNewEmail()">
-              ➕ Create New Sequence
-            </button>
-          </div>
-        `;
       }
     </script>
   </body>
