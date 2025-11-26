@@ -1,7 +1,5 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
-} else {
-  console.log('Running in production mode', process.env);
 }
 
 const express = require('express');
