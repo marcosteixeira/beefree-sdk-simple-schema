@@ -63,4 +63,4 @@ echo "Press Ctrl+C to stop the server"
 echo ""
 
 # Start the proxy server
-node proxy-server.js 
+node proxy-server.js
